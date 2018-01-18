@@ -63,19 +63,21 @@ impl<'a> LexContext<'a> {
                 .or(self.read_open_curly_brace())
                 .or(self.read_close_curly_brace())
                 .or(self.read_ampersand())
-                .or(self.read_hash());
+                .or(self.read_hash())
+                .or(self.read_quote());
         }
         Ok(())
     }
 
-    read_token!(read_open_paren,           '(', TokenValue::OpenParen);
-    read_token!(read_close_paren,          ')', TokenValue::CloseParen);
-    read_token!(read_open_square_bracket,  '[', TokenValue::OpenSquareBracket);
-    read_token!(read_close_square_bracket, ']', TokenValue::CloseSquareBracket);
-    read_token!(read_open_curly_brace,     '{', TokenValue::OpenCurlyBrace);
-    read_token!(read_close_curly_brace,    '}', TokenValue::CloseCurlyBrace);
-    read_token!(read_ampersand,            '&', TokenValue::Amersand);
-    read_token!(read_hash,                 '#', TokenValue::Hash);
+    read_token!(read_open_paren,           '(',  TokenValue::OpenParen);
+    read_token!(read_close_paren,          ')',  TokenValue::CloseParen);
+    read_token!(read_open_square_bracket,  '[',  TokenValue::OpenSquareBracket);
+    read_token!(read_close_square_bracket, ']',  TokenValue::CloseSquareBracket);
+    read_token!(read_open_curly_brace,     '{',  TokenValue::OpenCurlyBrace);
+    read_token!(read_close_curly_brace,    '}',  TokenValue::CloseCurlyBrace);
+    read_token!(read_ampersand,            '&',  TokenValue::Amersand);
+    read_token!(read_hash,                 '#',  TokenValue::Hash);
+    read_token!(read_quote,                '\'', TokenValue::Quote);
 
     fn consume_whitespace(&mut self) -> Result<()> {
         let mut char_iter = self.remaining_input.chars();

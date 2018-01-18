@@ -40,4 +40,5 @@ pub enum TokenValue<'a> {
     MonitorEnter,
     MonitorExit,
     Amersand,
+    String,
 }
