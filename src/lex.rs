@@ -1,6 +1,29 @@
 use token::{Token, TokenValue, Metadata};
 use errors::*;
 
+macro_rules! read_token {
+    ($fn_name:ident, $tok_char:expr, $tok_val:expr) => {
+        fn $fn_name(&mut self) -> Result<()> {
+            let mut char_iter = self.remaining_input.chars();
+            if let Some(c) = char_iter.clone().peekable().peek() {
+                if *c == $tok_char {
+                    char_iter.next();
+                    self.remaining_input = char_iter.as_str();
+                    let token = self.make_token($tok_val);
+                    self.processed.push(token);
+                    self.column_number += 1;
+                } else {
+                    self.remaining_input = char_iter.as_str();
+                    return Err(ErrorKind::UnrecognizedToken(self.line_number, self.column_number).into());
+                }
+            } else {
+                return Err(ErrorKind::EndOfInput.into());
+            }
+            Ok(())
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct LexContext<'a> {
     remaining_input: &'a str,
@@ -34,48 +57,25 @@ impl<'a> LexContext<'a> {
         while !self.remaining_input.is_empty() {
             self.consume_whitespace()
                 .or(self.read_open_paren())
-                .or(self.read_close_paren());
+                .or(self.read_close_paren())
+                .or(self.read_open_square_bracket())
+                .or(self.read_close_square_bracket())
+                .or(self.read_open_curly_brace())
+                .or(self.read_close_curly_brace())
+                .or(self.read_ampersand())
+                .or(self.read_hash());
         }
         Ok(())
     }
 
-    fn read_open_paren(&mut self) -> Result<()> {
-        let mut char_iter = self.remaining_input.chars();
-        if let Some(c) = char_iter.clone().peekable().peek() {
-            if *c == '(' {
-                char_iter.next();
-                self.remaining_input = char_iter.as_str();
-                let token = self.make_token(TokenValue::OpenParen);
-                self.processed.push(token);
-                self.column_number += 1;
-            } else {
-                self.remaining_input = char_iter.as_str();
-                // err different token
-            }
-        } else {
-            // err end of input
-        }
-        Ok(())
-    }
-
-    fn read_close_paren(&mut self) -> Result<()> {
-        let mut char_iter = self.remaining_input.chars();
-        if let Some(c) = char_iter.clone().peekable().peek() {
-            if *c == ')' {
-                char_iter.next();
-                self.remaining_input = char_iter.as_str();
-                let token = self.make_token(TokenValue::CloseParen);
-                self.processed.push(token);
-                self.column_number += 1;
-            } else {
-                self.remaining_input = char_iter.as_str();
-                return Err(ErrorKind::UnrecognizedToken(self.line_number, self.column_number).into());
-            }
-        } else {
-            return Err(ErrorKind::EndOfInput.into());
-        }
-        Ok(())
-    }
+    read_token!(read_open_paren, '(', TokenValue::OpenParen);
+    read_token!(read_close_paren, ')', TokenValue::CloseParen);
+    read_token!(read_open_square_bracket, '[', TokenValue::OpenSquareBracket);
+    read_token!(read_close_square_bracket, ']', TokenValue::CloseSquareBracket);
+    read_token!(read_open_curly_brace, '{', TokenValue::OpenCurlyBrace);
+    read_token!(read_close_curly_brace, '}', TokenValue::CloseCurlyBrace);
+    read_token!(read_ampersand, '&', TokenValue::Amersand);
+    read_token!(read_hash, '#', TokenValue::Hash);
 
     fn consume_whitespace(&mut self) -> Result<()> {
         let mut char_iter = self.remaining_input.chars();

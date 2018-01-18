@@ -8,7 +8,10 @@ pub mod token;
 pub mod lex;
 
 fn main() {
-    let input = "\t(((  )\n ) )";
+    let input = r"
+( #{ [ {} () & ])
+
+";
     let mut lexer = lex::LexContext::create(input);
 
     lexer.lex();
